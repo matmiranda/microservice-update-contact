@@ -22,18 +22,18 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore dependencies
-        run: dotnet restore CriarContatos.Api.sln
+        run: dotnet restore AtualizarContatos.Api.sln
 
       - name: Build
-        run: dotnet build CriarContatos.Api.sln --configuration Release
+        run: dotnet build AtualizarContatos.Api.sln --configuration Release
 
       - name: Publish Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: |
-            CriarContatos.Test/bin/Release/net8.0/
-            CriarContatos.Api/bin/Release/net8.0/
+            AtualizarContatos.Test/bin/Release/net8.0/
+            AtualizarContatos.Api/bin/Release/net8.0/
 
   start-rabbitmq-and-api:
     runs-on: ubuntu-latest
@@ -62,8 +62,8 @@ jobs:
         env:
           ASPNETCORE_URLS: http://localhost:5102
         run: |
-          cd CriarContatos.Api/bin/Release/net8.0/
-          dotnet CriarContatos.Api.dll &
+          cd AtualizarContatos.Api/bin/Release/net8.0/
+          dotnet AtualizarContatos.Api.dll &
           for i in {1..10}; do
             if curl -f http://localhost:5102/health > /dev/null 2>&1; then
               echo "API started successfully"
@@ -88,14 +88,14 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run Unit Tests
-        run: dotnet test CriarContatos.Test/CriarContatos.Test.csproj --configuration Release --logger "trx;LogFileName=TestResults/unit-test-results.trx" --results-directory CriarContatos.Test/TestResults
+        run: dotnet test AtualizarContatos.Test/AtualizarContatos.Test.csproj --configuration Release --logger "trx;LogFileName=TestResults/unit-test-results.trx" --results-directory AtualizarContatos.Test/TestResults
 
       - name: Publish Test Results
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-results
-          path: CriarContatos.Test/TestResults
+          path: AtualizarContatos.Test/TestResults
 
   setup-monitoring:
     runs-on: ubuntu-latest
@@ -134,8 +134,8 @@ jobs:
         env:
           ASPNETCORE_URLS: http://0.0.0.0:5102
         run: |
-          cd CriarContatos.Api/bin/Release/net8.0/
-          dotnet CriarContatos.Api.dll &
+          cd AtualizarContatos.Api/bin/Release/net8.0/
+          dotnet AtualizarContatos.Api.dll &
           for i in {1..10}; do
             if curl -f http://localhost:5102/health > /dev/null 2>&1; then
               echo "API started successfully"
