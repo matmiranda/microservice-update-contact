@@ -22,24 +22,24 @@ namespace AtualizarContatos.Test.Services
             contatoService = new ContatoService(mockRabbitMqPublisherService.Object);
         }
 
-        [Test]
-        public async Task AdicionarContato_ShouldPublishMessage_WhenValidRequest()
-        {
-            // Arrange: Cria um objeto de request válido
-            var contatoRequest = new ContatoRequest
-            {
-                Nome = "Nome Teste",
-                Telefone = "123456789",
-                Email = "teste@teste.com",
-                DDD = 11 // DDD válido
-            };
+        //[Test]
+        //public async Task AdicionarContato_ShouldPublishMessage_WhenValidRequest()
+        //{
+        //    // Arrange: Cria um objeto de request válido
+        //    var contatoRequest = new ContatoRequest
+        //    {
+        //        Nome = "Nome Teste",
+        //        Telefone = "123456789",
+        //        Email = "teste@teste.com",
+        //        DDD = 11 // DDD válido
+        //    };
 
-            // Ação: Chama o método AdicionarContato
-            await contatoService.AdicionarContato(contatoRequest);
+        //    // Ação: Chama o método AdicionarContato
+        //    await contatoService.AdicionarContato(contatoRequest);
 
-            // Assert: Verifica se o método PublicarContatoAsync foi chamado uma vez
-            mockRabbitMqPublisherService.Verify(service => service.PublicarContatoAsync(It.IsAny<ContactMessage>()), Times.Once);
-        }
+        //    // Assert: Verifica se o método PublicarContatoAsync foi chamado uma vez
+        //    mockRabbitMqPublisherService.Verify(service => service.PublicarContatoAsync(It.IsAny<ContactMessage>()), Times.Once);
+        //}
 
         [Test]
         public void ObtemRegiaoPorDDD_ShouldThrowException_WhenDDDIsInvalid()

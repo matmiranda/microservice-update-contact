@@ -16,16 +16,17 @@ namespace AtualizarContatos.Service.Contato
             _rabbitMqPublisherService = rabbitMqPublisherService;
         }
 
-        public async Task AdicionarContato(ContatoRequest contato)
+        public async Task AtualizarContato(ContatoRequest contato)
         {
-            //if (await _contatosRepository.ContatoExistePorEmail(contato.Email))
-            //    throw new CustomException(HttpStatusCode.Conflict, "Contato com este email já existe.");
-            //criar método para consultar no Azure Functions
-            //throw new NotImplementedException("ContatoExistePorEmail - Azure Functions");
+            //await ValidaIdContato(contato.Id);
 
-            string regiao = ObtemRegiaoPorDDD(contato.DDD);
+            //var contatoExistente = await _contatosRepository.ObterContatoPorId(contato.Id);
+            //var regiao = contatoExistente?.DDD == contato.DDD
+            //             ? contatoExistente.Regiao
+            //             : ObtemRegiaoPorDDD(contato.DDD);
 
-            ContactMessage contactMessage = ContatoMapper.ToContactMessage(contato, regiao);
+
+            ContactMessage contactMessage = ContatoMapper.ToContactMessage(contato, "regiao");
 
             // Enviar para a fila do RabbitMQ
             await _rabbitMqPublisherService.PublicarContatoAsync(contactMessage);

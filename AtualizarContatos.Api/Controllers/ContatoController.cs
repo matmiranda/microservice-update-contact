@@ -25,19 +25,18 @@ namespace AtualizarContatos.Api.Controllers
         }
 
         /// <summary>
-        /// Adiciona um novo contato.
+        /// Atualiza um contato existente.
         /// </summary>
-        /// <param name="contato">Os dados do contato a ser adicionado.</param>
-        /// <returns>O contato adicionado.</returns>
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        /// <param name="contato">Os dados do contato a ser atualizado.</param>
+        [HttpPut]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SwaggerResponse(400, "Erro de validação", typeof(ExceptionResponse), "application/json")]
-        [SwaggerResponse(409, "Erro de validação", typeof(ExceptionResponse), "application/json")]
-        public async Task<ActionResult<ContatoResponse>> PostContato(ContatoRequest contato)
+        [SwaggerResponse(404, "Erro de validação", typeof(ExceptionResponse), "application/json")]
+        public async Task<IActionResult> PutContato(ContatoRequest contato)
         {
-            await contatoService.AdicionarContato(contato);
+            await contatoService.AtualizarContato(contato);
             return Accepted();
         }
     }

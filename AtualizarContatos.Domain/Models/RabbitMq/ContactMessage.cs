@@ -10,5 +10,6 @@ namespace AtualizarContatos.Domain.Models.RabbitMq
         public int DDD { get; set; }
         public RegiaoEnum Regiao { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string Action { get; } = "UPDATE"; 
     }
 }
