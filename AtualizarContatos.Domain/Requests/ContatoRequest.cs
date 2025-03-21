@@ -4,6 +4,8 @@ namespace AtualizarContatos.Domain.Requests
 {
     public class ContatoRequest
     {
+        [Range(1, int.MaxValue, ErrorMessage = "O id deve ser maior que zero.")]
+        public int Id { get; set; }
         [Required(ErrorMessage = "O nome do contato é obrigatório.")]
         [RegularExpression(@"^[a-zA-ZÀ-ÿ]+(\s[a-zA-ZÀ-ÿ]+)+$", ErrorMessage = "O nome deve conter nome e sobrenome, separados por um espaço.")]
         public required string Nome { get; set; }

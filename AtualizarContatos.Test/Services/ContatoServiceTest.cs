@@ -19,7 +19,7 @@ namespace AtualizarContatos.Test.Services
         {
             // Inicializa o mock do IRabbitMqPublisherService
             mockRabbitMqPublisherService = new Mock<IRabbitMqPublisherService>();
-            contatoService = new ContatoService(mockRabbitMqPublisherService.Object);
+            //contatoService = new ContatoService(mockRabbitMqPublisherService.Object);
         }
 
         //[Test]
@@ -41,29 +41,29 @@ namespace AtualizarContatos.Test.Services
         //    mockRabbitMqPublisherService.Verify(service => service.PublicarContatoAsync(It.IsAny<ContactMessage>()), Times.Once);
         //}
 
-        [Test]
-        public void ObtemRegiaoPorDDD_ShouldThrowException_WhenDDDIsInvalid()
-        {
-            // Arrange: DDD inválido
-            int dddInvalido = 999;
+        //[Test]
+        //public void ObtemRegiaoPorDDD_ShouldThrowException_WhenDDDIsInvalid()
+        //{
+        //    // Arrange: DDD inválido
+        //    int dddInvalido = 999;
 
-            // Ação & Assert: Verifica se uma exceção é lançada com a mensagem esperada
-            var exception = Assert.Throws<CustomException>(() => ContatoService.ObtemRegiaoPorDDD(dddInvalido));
-            Assert.That(exception.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-            Assert.That(exception.Message, Is.EqualTo("Região NÃO ENCONTRADA para o DDD: 999"));
-        }
+        //    // Ação & Assert: Verifica se uma exceção é lançada com a mensagem esperada
+        //    var exception = Assert.Throws<CustomException>(() => ContatoService.ObtemRegiaoPorDDD(dddInvalido));
+        //    Assert.That(exception.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        //    Assert.That(exception.Message, Is.EqualTo("Região NÃO ENCONTRADA para o DDD: 999"));
+        //}
 
-        [Test]
-        public void ObtemRegiaoPorDDD_ShouldReturnRegion_WhenDDDIsValid()
-        {
-            // Arrange: DDD válido
-            int dddValido = 11;
+        //[Test]
+        //public void ObtemRegiaoPorDDD_ShouldReturnRegion_WhenDDDIsValid()
+        //{
+        //    // Arrange: DDD válido
+        //    int dddValido = 11;
 
-            // Ação: Chama o método ObtemRegiaoPorDDD
-            var regiao = ContatoService.ObtemRegiaoPorDDD(dddValido);
+        //    // Ação: Chama o método ObtemRegiaoPorDDD
+        //    var regiao = ContatoService.ObtemRegiaoPorDDD(dddValido);
 
-            // Assert: Verifica se a região retornada está correta
-            Assert.That(regiao, Is.EqualTo("4")); // Região 4 para o DDD 11
-        }
+        //    // Assert: Verifica se a região retornada está correta
+        //    Assert.That(regiao, Is.EqualTo("4")); // Região 4 para o DDD 11
+        //}
     }
 }

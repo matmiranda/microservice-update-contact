@@ -21,6 +21,11 @@ builder.Services.ConfigureMassTransit(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient("NamedClient", client =>
+{
+    client.BaseAddress = new Uri("https://fiap-api-gateway.azure-api.net/");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerConfiguration();

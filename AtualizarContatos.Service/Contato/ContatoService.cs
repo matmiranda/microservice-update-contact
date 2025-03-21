@@ -1,32 +1,40 @@
 ﻿using AtualizarContatos.Domain.Models.RabbitMq;
 using AtualizarContatos.Domain.Requests;
+using AtualizarContatos.Domain.Responses;
 using AtualizarContatos.Infrastructure.Exceptions;
 using AtualizarContatos.Service.Mapper;
 using AtualizarContatos.Service.RabbitMq;
+using Microsoft.Extensions.Configuration;
 using System.Net;
+using System.Text.Json;
 
 namespace AtualizarContatos.Service.Contato
 {
     public class ContatoService : IContatoService
     {
         private readonly IRabbitMqPublisherService _rabbitMqPublisherService;
+        private readonly HttpClient _httpClient;
+        private readonly string _key;
 
-        public ContatoService(IRabbitMqPublisherService rabbitMqPublisherService)
+        public ContatoService(IRabbitMqPublisherService rabbitMqPublisherService, HttpClient httpClient, IConfiguration configuration)
         {
             _rabbitMqPublisherService = rabbitMqPublisherService;
+            _httpClient = httpClient;
+            _key = configuration["ApiAzure:Key"] ?? throw new CustomException(HttpStatusCode.InternalServerError, "ApiAzure:Key configuration is missing.");
         }
 
         public async Task AtualizarContato(ContatoRequest contato)
         {
-            //await ValidaIdContato(contato.Id);
+            ContatoIdResponse? contatoId = await ConsultaContatoPorId(contato.Id);
 
-            //var contatoExistente = await _contatosRepository.ObterContatoPorId(contato.Id);
-            //var regiao = contatoExistente?.DDD == contato.DDD
-            //             ? contatoExistente.Regiao
-            //             : ObtemRegiaoPorDDD(contato.DDD);
+            if (contatoId == null)
+                throw new CustomException(HttpStatusCode.NotFound, $"O id do contato não existe.");
 
+            var regiao = contatoId?.DDD == contato.DDD
+                         ? contatoId.Regiao
+                         : ObtemRegiaoPorDDD(contato.DDD);
 
-            ContactMessage contactMessage = ContatoMapper.ToContactMessage(contato, "regiao");
+            ContactMessage contactMessage = ContatoMapper.ToContactMessage(contato, regiao);
 
             // Enviar para a fila do RabbitMQ
             await _rabbitMqPublisherService.PublicarContatoAsync(contactMessage);
@@ -48,6 +56,19 @@ namespace AtualizarContatos.Service.Contato
                 throw new CustomException(HttpStatusCode.BadRequest, $"Região NÃO ENCONTRADA para o DDD: {DDD}");
 
             return regiao;
+        }
+
+        public async Task<ContatoIdResponse?> ConsultaContatoPorId(int id)
+        {
+            string url = $"https://fiap-api-gateway.azure-api.net/consulta-contato-id/contato/{id}";
+            _httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", _key);
+            HttpResponseMessage response = await _httpClient.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+                return JsonSerializer.Deserialize<ContatoIdResponse>(await response.Content.ReadAsStringAsync());
+            else if (response.StatusCode == HttpStatusCode.NotFound)
+                return null;
+            else
+                throw new CustomException(HttpStatusCode.InternalServerError, $"Algo deu errado ao consultar Api Azure");
         }
     }
 }

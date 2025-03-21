@@ -31,6 +31,11 @@ namespace AtualizarContatos.Api.Swagger
                     Type = "object",
                     Properties = new Dictionary<string, OpenApiSchema>
                     {
+                        ["id"] = new OpenApiSchema
+                        {
+                            Type = "int",
+                            Example = new OpenApiString("0")
+                        },
                         ["nome"] = new OpenApiSchema
                         {
                             Type = "string",
