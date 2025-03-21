@@ -39,5 +39,15 @@ namespace AtualizarContatos.Api.Controllers
             await contatoService.AtualizarContato(contato);
             return Accepted();
         }
+
+        /// <summary>
+        /// Rota de teste para verificar se o controlador está funcionando.
+        /// </summary>
+        [HttpGet("teste")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult GetTeste()
+        {
+            return Ok("API está funcionando corretamente.");
+        }
     }
 }

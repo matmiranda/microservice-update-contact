@@ -60,7 +60,7 @@ namespace AtualizarContatos.Service.Contato
 
         public async Task<ContatoIdResponse?> ConsultaContatoPorId(int id)
         {
-            string url = $"https://fiap-api-gateway.azure-api.net/consulta-contato-id/contato/{id}";
+            string url = $"https://fiap-api-gateway.azure-api.net/contato/{id}";
             _httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", _key);
             HttpResponseMessage response = await _httpClient.GetAsync(url);
             if (response.IsSuccessStatusCode)
