@@ -37,7 +37,7 @@ namespace AtualizarContatos.Service.Contato
             ContactMessage contactMessage = ContatoMapper.ToContactMessage(contato, regiao);
 
             // Enviar para a fila do RabbitMQ
-            await _rabbitMqPublisherService.PublicarContatoAsync(contactMessage);
+            _ = _rabbitMqPublisherService.PublicarContatoAsync(contactMessage);
         }
 
         public static string ObtemRegiaoPorDDD(int DDD)
