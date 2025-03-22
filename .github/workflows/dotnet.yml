@@ -11,7 +11,7 @@ on:
       - main
 
 jobs:
-  build-and-restore:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,43 +27,37 @@ jobs:
       - name: Build
         run: dotnet build AtualizarContatos.Api.sln --configuration Release
 
-      - name: Publish Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: |
-            AtualizarContatos.Test/bin/Release/net8.0/
-            AtualizarContatos.Api/bin/Release/net8.0/
-
-  start-rabbitmq-and-api:
-    runs-on: ubuntu-latest
-    needs: build-and-restore
-    steps:
       - name: Start RabbitMQ
         run: |
           docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
-          sleep 10 # Aguarda RabbitMQ subir
+          sleep 10
+          for i in {1..10}; do
+            if curl -u guest:guest -f http://localhost:15672/api/healthchecks/node > /dev/null 2>&1; then
+              echo "RabbitMQ is ready"
+              exit 0
+            fi
+            echo "Waiting for RabbitMQ to start... Attempt $i of 10"
+            sleep 5
+          done
+          echo "RabbitMQ failed to start"
+          exit 1
 
-      - name: Verify RabbitMQ
-        run: curl -f http://localhost:15672 || exit 1
-
-      - uses: actions/checkout@v4
-
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: ./
-
-      - name: Debug File Structure
-        run: ls -R ./
+      - name: Set Environment Variables
+        run: |
+          echo "RABBITMQSETTINGS__HOST=localhost" >> $GITHUB_ENV
+          echo "RABBITMQSETTINGS__USERNAME=guest" >> $GITHUB_ENV
+          echo "RABBITMQSETTINGS__PASSWORD=guest" >> $GITHUB_ENV
 
       - name: Start API in Background
         env:
           ASPNETCORE_URLS: http://localhost:5102
         run: |
           cd AtualizarContatos.Api/bin/Release/net8.0/
-          dotnet AtualizarContatos.Api.dll &
+          dotnet AtualizarContatos.Api.dll & disown
+          sleep 5
+
+      - name: Wait for API to Start
+        run: |
           for i in {1..10}; do
             if curl -f http://localhost:5102/health > /dev/null 2>&1; then
               echo "API started successfully"
@@ -72,7 +66,7 @@ jobs:
             echo "Waiting for API to start... Attempt $i of 10"
             sleep 3
           done
-          echo "API failed to start after 10 attempts"
+          echo "API failed to start"
           exit 1
 
       - name: Test API Health
@@ -81,143 +75,22 @@ jobs:
       - name: Test API Metrics
         run: curl -f http://localhost:5102/metrics || exit 1
 
-  unit-tests:
-    runs-on: ubuntu-latest
-    needs: start-rabbitmq-and-api
-    steps:
-      - uses: actions/checkout@v4
+      - name: Run Unit Tests        
+        run: dotnet test AtualizarContatos.Test/AtualizarContatos.Test.csproj --configuration Release --logger "console;verbosity=detailed"
 
-      - name: Run Unit Tests
-        run: dotnet test AtualizarContatos.Test/AtualizarContatos.Test.csproj --configuration Release --logger "trx;LogFileName=TestResults/unit-test-results.trx" --results-directory AtualizarContatos.Test/TestResults
+      - name: Publish
+        run: dotnet publish AtualizarContatos.Api/AtualizarContatos.Api.csproj --configuration Release --output AtualizarContatos.Api/publish
 
-      - name: Publish Test Results
-        if: success() || failure()
-        uses: actions/upload-artifact@v4
+      - name: Deploy to Azure Aplication Api
+        uses: azure/webapps-deploy@v3
         with:
-          name: unit-test-results
-          path: AtualizarContatos.Test/TestResults
+          app-name: 'atualiza-contato'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: 'AtualizarContatos.Api/publish'
 
-  setup-monitoring:
-    runs-on: ubuntu-latest
-    needs: unit-tests
-    env:
-      ASPNETCORE_URLS: http://0.0.0.0:5102
-    steps:
-      - name: Install jq
-        run: sudo apt-get install -y jq
 
-      - name: Get Host IP
-        id: host-ip
-        run: |
-          HOST_IP=$(hostname -I | awk '{print $1}')
-          echo "HOST_IP=$HOST_IP" >> $GITHUB_ENV
-          echo "Host IP: $HOST_IP"  # Log para depuração
-
-      - name: Start RabbitMQ
-        run: |
-          docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
-          sleep 10 # Aguarda RabbitMQ subir
-
-      - name: Verify RabbitMQ
-        run: curl -f http://localhost:15672 || exit 1
-
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: ./
-
-      - name: Debug File Structure
-        run: ls -R ./
-
-      - name: Start API in Background
-        env:
-          ASPNETCORE_URLS: http://0.0.0.0:5102
-        run: |
-          cd AtualizarContatos.Api/bin/Release/net8.0/
-          dotnet AtualizarContatos.Api.dll &
-          for i in {1..10}; do
-            if curl -f http://localhost:5102/health > /dev/null 2>&1; then
-              echo "API started successfully"
-              exit 0
-            fi
-            echo "Waiting for API to start... Attempt $i of 10"
-            sleep 3
-          done
-          echo "API failed to start after 10 attempts"
-          exit 1
-
-      - name: Setup Prometheus
-        run: |
-          mkdir -p prometheus
-          echo "
-          global:
-            scrape_interval: 5s
-          scrape_configs:
-            - job_name: 'dotnet-api'
-              metrics_path: '/metrics'
-              static_configs:
-                - targets: ['${{ env.HOST_IP }}:5102']
-          " > prometheus/prometheus.yml
-
-          docker run -d --name prometheus -p 9090:9090 -v $(pwd)/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
-
-      - name: Setup Grafana
-        run: docker run -d --name grafana -p 3000:3000 grafana/grafana
-
-      - name: Wait for Prometheus to start
-        run: |
-          for i in {1..10}; do
-            if curl -f http://localhost:9090/-/ready; then
-              echo "Prometheus is ready"
-              exit 0
-            fi
-            echo "Waiting for Prometheus..."
-            sleep 3
-          done
-          echo "Prometheus failed to start"
-          exit 1
-
-      - name: Wait for Prometheus to scrape API metrics
-        run: sleep 20  # Aguardando métricas serem coletadas
-
-      - name: Debug Prometheus Targets
-        run: curl -s http://localhost:9090/api/v1/targets | jq .
-
-      - name: Verify Prometheus scraping API metrics
-        run: |
-          if curl -s http://localhost:9090/api/v1/targets | jq -e '.data.activeTargets[] | select(.health == "up")'; then
-            echo "API registered successfully in Prometheus"
-          else
-            echo "Prometheus targets not ready, dumping logs..."
-            docker logs prometheus
-            exit 1
-          fi
-
-      - name: Configure Grafana data source for Prometheus
-        run: |
-          sleep 10  # Aguarda o Grafana estar completamente pronto
-          curl -X POST -H "Content-Type: application/json" \
-            -d '{
-                  "name": "Prometheus",
-                  "type": "prometheus",
-                  "url": "http://localhost:9090",
-                  "access": "proxy"
-                }' \
-            http://admin:admin@localhost:3000/api/datasources
-
-      - name: Verify Grafana is running
-        run: curl -L -f http://localhost:3000 > /dev/null || exit 1
-
-  cleanup:
-    runs-on: ubuntu-latest
-    needs: [unit-tests, setup-monitoring]
-    if: always()
-    steps:
-      - name: Cleanup Docker containers
+      - name: Cleanup
+        if: always()
         run: |
           docker rm -f rabbitmq || true
-          docker rm -f prometheus || true
-          docker rm -f grafana || true
-          docker volume rm prometheus_data || true
-          docker volume rm grafana_data || true
+          docker volume prune -f
