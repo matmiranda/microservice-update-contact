@@ -19,6 +19,12 @@ builder.Configuration
 // Configurar MassTransit
 builder.Services.ConfigureMassTransit(builder.Configuration);
 
+// Monitoramento com Application Insights
+builder.Services.AddApplicationInsightsTelemetry(options =>
+{
+    options.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+});
+
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient("NamedClient", client =>
