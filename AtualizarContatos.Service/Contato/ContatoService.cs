@@ -34,6 +34,9 @@ namespace AtualizarContatos.Service.Contato
                          ? contatoId.Regiao
                          : ObtemRegiaoPorDDD(contato.DDD);
 
+            if (regiao == null)
+                throw new CustomException(HttpStatusCode.BadRequest, "Região não encontrado");
+
             ContactMessage contactMessage = ContatoMapper.ToContactMessage(contato, regiao);
 
             // Enviar para a fila do RabbitMQ

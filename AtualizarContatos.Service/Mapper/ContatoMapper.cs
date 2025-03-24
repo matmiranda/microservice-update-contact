@@ -10,6 +10,7 @@ namespace AtualizarContatos.Service.Mapper
         {
             return new ContactMessage
             {
+                Id = request.Id,
                 Nome = request.Nome,
                 Telefone = request.Telefone,
                 Email = request.Email,
