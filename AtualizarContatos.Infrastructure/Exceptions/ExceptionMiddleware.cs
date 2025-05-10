@@ -1,5 +1,6 @@
 ﻿using AtualizarContatos.Domain.Responses;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
 
@@ -8,10 +9,12 @@ namespace AtualizarContatos.Infrastructure.Exceptions
     public class ExceptionMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly ILogger<ExceptionMiddleware> _logger;
 
-        public ExceptionMiddleware(RequestDelegate next)
+        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
         {
             _next = next;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext httpContext)
@@ -22,10 +25,12 @@ namespace AtualizarContatos.Infrastructure.Exceptions
             }
             catch (CustomException ex)
             {
+                _logger.LogInformation($"CustomException: StatusCode: {ex.StatusCode} | Message: {ex.Message}");
                 await HandleCustomExceptionAsync(httpContext, ex);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Exception {Message}", ex.Message);
                 await HandleExceptionAsync(httpContext, ex);
             }
         }
