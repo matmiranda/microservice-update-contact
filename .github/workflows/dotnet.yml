@@ -10,6 +10,9 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write  # Permissões para gerar o id-token
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -81,13 +84,76 @@ jobs:
       - name: Publish
         run: dotnet publish AtualizarContatos.Api/AtualizarContatos.Api.csproj --configuration Release --output AtualizarContatos.Api/publish
 
-      - name: Deploy to Azure Aplication Api
-        uses: azure/webapps-deploy@v3
+      # --- Adicionando as etapas de Docker, ACR e AKS ---
+      - name: Azure Login
+        uses: azure/login@v1
         with:
-          app-name: 'atualiza-contato'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: 'AtualizarContatos.Api/publish'
+          client-id: d8474ed9-45a6-4b74-9ccd-a0fe6f5c421f
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: 6837c849-6303-4e99-a99f-316f98266202
 
+      - name: Log in to Azure CLI (Using Managed Identity)
+        run: |
+          az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }}
+
+      - name: Verificar se o cluster Kubernetes está acessível
+        run: |
+          if kubectl cluster-info; then
+            echo "Cluster Kubernetes está acessível"
+          else
+            echo "Falha ao acessar o cluster Kubernetes"
+            exit 1
+          fi
+
+      - name: Log in to Azure Container Registry (ACR)
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/atualizar-contatos:latest -f AtualizarContatos.Api/Dockerfile .
+
+      - name: Push Docker image to ACR
+        run: |
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/atualizar-contatos:latest
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: '${{ secrets.AKS_RESOURCE_GROUP }}'
+          cluster-name: '${{ secrets.AKS_CLUSTER_NAME }}'
+
+      - name: Update Kubernetes Resources
+        run: |
+          # Aplica ConfigMap (cria ou atualiza se necessário)
+          kubectl apply -f AtualizarContatos.Api/k8s/atualizar-contatos-configmap.yml
+
+          # Aplica Deployment (cria ou atualiza se necessário)
+          kubectl apply -f AtualizarContatos.Api/k8s/atualizar-contatos-deployment.yml
+
+          # Aplica PVC e PV (apenas cria ou atualiza, sem deletar)
+          kubectl apply -f AtualizarContatos.Api/k8s/atualizar-contatos-persistent-volume.yml
+          kubectl apply -f AtualizarContatos.Api/k8s/atualizar-contatos-persistent-volume-claim.yml
+
+          # Aplica Service (cria ou atualiza se necessário)
+          kubectl apply -f AtualizarContatos.Api/k8s/atualizar-contatos-service.yml
+
+          # Espera o rollout do Deployment para garantir que a atualização foi bem-sucedida
+          kubectl rollout status deployment/atualizar-contatos-deployment
+      
+      - name: Update AKS Deployment with new image
+        uses: azure/k8s-deploy@v1
+        with:
+          manifests: |
+            AtualizarContatos.Api/k8s/atualizar-contatos-deployment.yml
+            AtualizarContatos.Api/k8s/atualizar-contatos-service.yml
+          images: |
+            ${{ secrets.ACR_LOGIN_SERVER }}/atualizar-contatos:latest
+          imagepullsecrets: |
+            acr-auth
 
       - name: Cleanup
         if: always()

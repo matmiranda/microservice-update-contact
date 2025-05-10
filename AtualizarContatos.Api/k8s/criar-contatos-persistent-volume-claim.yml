@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: atualizar-contatos-persistent-volume-claim
+  labels:
+    app: atualizar-contatos
+    tier: backend
+  annotations:
+    description: "Claim para acessar o volume persistente do microsserviço atualizar-contatos"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: default
