@@ -4,6 +4,13 @@ using AtualizarContatos.Service.Contato;
 using Prometheus;
 using AtualizarContatos.Infrastructure.MassTransit;
 using AtualizarContatos.Service.RabbitMq;
+using Serilog;
+
+// grava logs em um arquivo no kubernete k8s azure
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("/app/logs/criar-contatos/log.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 
