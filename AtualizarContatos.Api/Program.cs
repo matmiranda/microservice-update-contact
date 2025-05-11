@@ -9,7 +9,7 @@ using Serilog;
 // grava logs em um arquivo no kubernete k8s azure
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
-    .WriteTo.File("/app/logs/criar-contatos/log.txt", rollingInterval: RollingInterval.Day)
+    .WriteTo.File("/app/logs/atualizar-contatos/log.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);

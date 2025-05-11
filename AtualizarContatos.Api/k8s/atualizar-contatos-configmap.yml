@@ -14,6 +14,6 @@ data:
   RabbitMQSettings__Host: "20.206.204.96"
   RabbitMQSettings__Username: "fiaprabbitmq"
   RabbitMQSettings__Password: "fiaprabbitmq123@"
-  RabbitMQSettings__QueueName: "criar_contatos"
+  RabbitMQSettings__QueueName: "atualizar_contatos"
   ApiAzure__Key: "f51a99ebaae9465c9bba4e2f48fbd7a0"
   ApplicationInsights__InstrumentationKey: "ba3be08c-ad9c-4b24-b905-73b8ae55bfcc"
