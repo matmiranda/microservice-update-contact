@@ -32,7 +32,7 @@ spec:
                 name: atualizar-contatos-configmap
           volumeMounts:
             - name: atualizar-contatos-volume
-              mountPath: /app/logs/atualizar-contatos
+              mountPath: /app/logs/producer/atualizar-contatos
       imagePullSecrets:
         - name: acr-auth
       volumes:

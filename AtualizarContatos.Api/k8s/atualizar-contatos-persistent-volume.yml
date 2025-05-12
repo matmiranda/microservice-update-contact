@@ -15,4 +15,4 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: default
   hostPath:
-    path: /data/atualizar-contatos/logs
+    path: /data/atualizar-contatos/logs/producer

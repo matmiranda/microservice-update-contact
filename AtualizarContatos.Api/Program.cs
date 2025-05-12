@@ -9,19 +9,19 @@ using Serilog;
 // grava logs em um arquivo no kubernete k8s azure
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
-    .WriteTo.File("/app/logs/atualizar-contatos/log.txt", rollingInterval: RollingInterval.Day)
+    .WriteTo.File("/app/logs/producer/atualizar-contatos/log.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Adiciona o serviço de health check
+// Adiciona o serviï¿½o de health check
 builder.Services.AddHealthChecks();
 
-// Adiciona a configuração do appsettings.json
+// Adiciona a configuraï¿½ï¿½o do appsettings.json
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddEnvironmentVariables(); // Permite sobrescrever com variáveis de ambiente
+    .AddEnvironmentVariables(); // Permite sobrescrever com variï¿½veis de ambiente
 
 // Configurar MassTransit
 builder.Services.ConfigureMassTransit(builder.Configuration);
