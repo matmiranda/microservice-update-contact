@@ -114,11 +114,11 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/atualizar-contatos:latest -f AtualizarContatos.Api/Dockerfile .
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/producer-atualizar-contatos:latest -f AtualizarContatos.Api/Dockerfile .
 
       - name: Push Docker image to ACR
         run: |
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/atualizar-contatos:latest
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/producer-atualizar-contatos:latest
 
       - name: Set AKS context
         uses: azure/aks-set-context@v3
@@ -129,29 +129,29 @@ jobs:
       - name: Update Kubernetes Resources
         run: |
           # Aplica ConfigMap (cria ou atualiza se necessário)
-          kubectl apply -f AtualizarContatos.Api/k8s/atualizar-contatos-configmap.yml
+          kubectl apply -f AtualizarContatos.Api/k8s/producer-atualizar-contatos-configmap.yml
 
           # Aplica Deployment (cria ou atualiza se necessário)
-          kubectl apply -f AtualizarContatos.Api/k8s/atualizar-contatos-deployment.yml
+          kubectl apply -f AtualizarContatos.Api/k8s/producer-atualizar-contatos-deployment.yml
 
           # Aplica PVC e PV (apenas cria ou atualiza, sem deletar)
-          kubectl apply -f AtualizarContatos.Api/k8s/atualizar-contatos-persistent-volume.yml
-          kubectl apply -f AtualizarContatos.Api/k8s/atualizar-contatos-persistent-volume-claim.yml
+          kubectl apply -f AtualizarContatos.Api/k8s/producer-atualizar-contatos-persistent-volume.yml
+          kubectl apply -f AtualizarContatos.Api/k8s/producer-atualizar-contatos-persistent-volume-claim.yml
 
           # Aplica Service (cria ou atualiza se necessário)
-          kubectl apply -f AtualizarContatos.Api/k8s/atualizar-contatos-service.yml
+          kubectl apply -f AtualizarContatos.Api/k8s/producer-atualizar-contatos-service.yml
 
           # Espera o rollout do Deployment para garantir que a atualização foi bem-sucedida
-          kubectl rollout status deployment/atualizar-contatos-deployment
+          kubectl rollout status deployment/producer-atualizar-contatos-deployment
       
       - name: Update AKS Deployment with new image
         uses: azure/k8s-deploy@v1
         with:
           manifests: |
-            AtualizarContatos.Api/k8s/atualizar-contatos-deployment.yml
-            AtualizarContatos.Api/k8s/atualizar-contatos-service.yml
+            AtualizarContatos.Api/k8s/producer-atualizar-contatos-deployment.yml
+            AtualizarContatos.Api/k8s/producer-atualizar-contatos-service.yml
           images: |
-            ${{ secrets.ACR_LOGIN_SERVER }}/atualizar-contatos:latest
+            ${{ secrets.ACR_LOGIN_SERVER }}/producer-atualizar-contatos:latest
           imagepullsecrets: |
             acr-auth
 
