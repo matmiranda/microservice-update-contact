@@ -1,17 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: atualizar-contatos-service
+  name: producer-atualizar-contatos-service
   labels:
-    app: atualizar-contatos
+    app: producer-atualizar-contatos
     tier: backend
     environment: production
   annotations:
-    description: "Service para expor o microsserviço atualizar-contatos"
+    description: "Service para expor o microsserviço producer-atualizar-contatos"
 spec:
   type: LoadBalancer
   selector:
-    app: atualizar-contatos
+    app: producer-atualizar-contatos
   ports:
     - protocol: TCP
       port: 80

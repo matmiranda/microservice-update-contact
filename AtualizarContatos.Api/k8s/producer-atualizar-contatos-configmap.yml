@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: atualizar-contatos-configmap
+  name: producer-atualizar-contatos-configmap
   labels:
-    app: atualizar-contatos
+    app: producer-atualizar-contatos
     tier: backend
   annotations:
-    description: "Configurações externas para o microsserviço atualizar-contatos"
+    description: "Configurações externas para o microsserviço producer-atualizar-contatos"
 data:
   Logging__LogLevel__Default: "Information"
   Logging__LogLevel__Microsoft__AspNetCore: "Warning"

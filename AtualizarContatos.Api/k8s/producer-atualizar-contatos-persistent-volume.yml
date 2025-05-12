@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: producer-atualizar-contatos-persistent-volume
+  labels:
+    app: producer-atualizar-contatos
+    tier: backend
+  annotations:
+    description: "Volume persistente para dados do microsserviço producer-atualizar-contatos"
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: default
+  hostPath:
+    path: /data/producer-atualizar-contatos/logs/producer

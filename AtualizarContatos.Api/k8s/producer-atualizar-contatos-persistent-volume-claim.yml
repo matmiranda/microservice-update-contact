@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: atualizar-contatos-persistent-volume-claim
+  name: producer-atualizar-contatos-persistent-volume-claim
   labels:
-    app: atualizar-contatos
+    app: producer-atualizar-contatos
     tier: backend
   annotations:
-    description: "Claim para acessar o volume persistente do microsserviço atualizar-contatos"
+    description: "Claim para acessar o volume persistente do microsserviço producer-atualizar-contatos"
 spec:
   accessModes:
     - ReadWriteOnce
