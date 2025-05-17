@@ -20,7 +20,7 @@ namespace AtualizarContatos.Api.Swagger
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "Cadastro de Contatos - Fase 3",
+                    Title = "Cadastro de Contatos - Fase 4",
                     Version = "v1",
                     Description = "Uma API para cadastrar contatos"
                 });
