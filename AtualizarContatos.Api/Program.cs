@@ -49,14 +49,17 @@ builder.Services.AddScoped<IRabbitMqPublisherService, RabbitMqPublisherService>(
 var app = builder.Build();
 
 // Mapeia o endpoint de health check
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/atualizar/contato/health");
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseSwagger(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.RouteTemplate = "atualizar/contato/swagger/{documentName}/swagger.json";
+});
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/atualizar/contato/swagger/v1/swagger.json", "API V1");
+    c.RoutePrefix = "atualizar/contato/swagger";
+});
 
 // Adicionar middleware do Prometheus
 app.UseMetricServer();
