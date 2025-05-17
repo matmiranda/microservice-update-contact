@@ -7,7 +7,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /contato
+      - path: /atualizar/contato
         pathType: Prefix
         backend:
           service:
