@@ -141,6 +141,9 @@ jobs:
           # Aplica Service (cria ou atualiza se necessário)
           kubectl apply -f AtualizarContatos.Api/k8s/producer-atualizar-contatos-service.yml
 
+          # Aplica o Ingress (cria ou atualiza o roteamento externo)
+          kubectl apply -f AtualizarContatos.Api/k8s/producer-atualizar-contatos-ingress.yml
+
           # Espera o rollout do Deployment para garantir que a atualização foi bem-sucedida
           kubectl rollout status deployment/producer-atualizar-contatos-deployment
       
