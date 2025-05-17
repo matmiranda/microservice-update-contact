@@ -155,8 +155,8 @@ jobs:
             AtualizarContatos.Api/k8s/producer-atualizar-contatos-service.yml
           images: |
             ${{ secrets.ACR_LOGIN_SERVER }}/producer-atualizar-contatos:latest
-          imagepullsecrets: |
-            acr-auth
+          # imagepullsecrets: |
+          #   acr-auth
 
       - name: Cleanup
         if: always()
