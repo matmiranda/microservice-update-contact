@@ -33,6 +33,20 @@ spec:
           volumeMounts:
             - name: producer-atualizar-contatos-volume
               mountPath: /app/logs/producer/producer-atualizar-contatos
+          # readinessProbe:
+          #   httpGet:
+          #     path: /atualizar/contato/health
+          #     port: 80
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 10
+          #   failureThreshold: 3
+          # livenessProbe:
+          #   httpGet:
+          #     path: /atualizar/contato/health
+          #     port: 80
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 20
+          #   failureThreshold: 3
       imagePullSecrets:
         - name: acr-auth
       volumes:
