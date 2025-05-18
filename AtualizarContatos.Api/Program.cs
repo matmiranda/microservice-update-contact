@@ -61,9 +61,8 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "atualizar/contato/swagger";
 });
 
-// Adicionar middleware do Prometheus
-app.UseMetricServer();
-app.UseHttpMetrics();
+// Adicionar middleware do Prometheus com endpoint customizado
+app.UseMetricServer("/atualizar/contato/metrics");
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
