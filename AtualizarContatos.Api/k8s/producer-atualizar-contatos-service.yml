@@ -8,6 +8,9 @@ metadata:
     environment: production
   annotations:
     description: "Service para expor o microsserviço producer-atualizar-contatos"
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/atualizar/contato/metrics"
+    prometheus.io/port: "80"
 spec:
   type: LoadBalancer
   selector:
