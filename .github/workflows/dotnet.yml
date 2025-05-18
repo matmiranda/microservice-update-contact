@@ -76,7 +76,7 @@ jobs:
         run: curl -f http://localhost:5102/atualizar/contato/health || exit 1
 
       - name: Test API Metrics
-        run: curl -f http://localhost:5102/metrics || exit 1
+        run: curl -f http://localhost:5102/atualizar/contato/metrics || exit 1
 
       - name: Run Unit Tests        
         run: dotnet test AtualizarContatos.Test/AtualizarContatos.Test.csproj --configuration Release --logger "console;verbosity=detailed"
